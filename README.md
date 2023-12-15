@@ -1,8 +1,11 @@
-# Sample Hardhat Project
+# Simple NFT Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project is a training for using ERC721.sol, ERC721Enumerable.sol, Ownable.sol and use of metadata.
+The goal is also to takes notes of different cases where gas usage could be optimized.
 
-Try running some of the following tasks:
+Notes :
+
+- Hardhat commands :
 
 ```shell
 npx hardhat help
