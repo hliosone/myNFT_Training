@@ -30,7 +30,6 @@ Notes :
 
 ```shell
 
-
 Installing
 npm install --save-dev hardhat
 
