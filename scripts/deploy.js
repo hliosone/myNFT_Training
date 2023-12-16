@@ -1,6 +1,7 @@
 // ethers.js comes built in to Hardhat
 
 const { ethers } = require("hardhat");
+const fs = require('fs');
 
 async function main() {
   //Specify to the script the contract we want to deploy
@@ -13,6 +14,7 @@ async function main() {
 
   contractAddr = await deployedContract.getAddress();
   console.log("NFT Contract deployed to: " + contractAddr);
+  fs.writeFileSync('contractAddress.txt', contractAddr);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

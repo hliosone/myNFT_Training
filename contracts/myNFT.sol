@@ -1,27 +1,31 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 //import the standard implementation of ERC721
-//import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-//import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+//import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 // creation of an ERC721 contract
-contract myNFT is ERC721Enumerable {
+contract myNFT is ERC721, Ownable {
 
     uint256 private nextToken = 1;
+    
     struct TokenMetadata {
         string description;
-        uint256 tokenId;
         address tokenOwner;
+        uint256 parentId;
+        uint256[] childrens;
     }
 
 mapping(uint256 => TokenMetadata) private tokenMetadataBook;
 
-constructor() ERC721("mySuperNFT","SPNFT"){}
+//Using msg.sender instead of constructor argument for security reasons
+constructor() ERC721("mySuperNFT","SPNFT") Ownable(msg.sender) {}
 
-function mint(string memory _description, address _tokenOwner) external {
+//mint function is only callable by the owner so here the first msg.sender of the contract
+function mint(string memory _description, uint256 _parentId, address _tokenOwner) external onlyOwner {
 
     uint256 tokenNumber = nextToken;
 
@@ -31,18 +35,33 @@ function mint(string memory _description, address _tokenOwner) external {
     //Add metadata to the token
     tokenMetadataBook[tokenNumber] = TokenMetadata({
         description: _description,
-        tokenId: tokenNumber,
-        tokenOwner: _tokenOwner
+        tokenOwner: _tokenOwner,
+        parentId: _parentId,
+        childrens: new uint256[](0)
     });
 
-    //Incrementing for next token number
+    //Need to verify if parent exists before pushing !!!
+    if(_parentId != 0){tokenMetadataBook[_parentId].childrens.push(tokenNumber);}
+
+    //Incrementing after metadata creation for next token number
     ++nextToken;
 }
 
-function readMetadata(uint256 _tokenId) public view returns (string memory, uint256, address) {
+function readMetadata(uint256 _tokenId) public view returns (string memory, uint256, address, uint256[] memory) {
     TokenMetadata memory data = tokenMetadataBook[_tokenId];
-    return (data.description, _tokenId, data.tokenOwner);
+    return (data.description, data.parentId, data.tokenOwner, data.childrens);
 }
 
+function getChildrens(uint256 _tokenId) external view returns (uint256[] memory) {
+    return tokenMetadataBook[_tokenId].childrens;
+}
 
+function setMetadata(string memory _description, uint256 _tokenNumber) public {
+    if (bytes(_description).length != 0){
+        tokenMetadataBook[_tokenNumber].description = _description;
+    }
+}
+
+//function deleteChildren(uint256 _parentId, uint256 _childrenToken) internal {}
+//function addChildren(uint256 _childrenToken) internal {}
 }
