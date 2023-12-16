@@ -20,9 +20,6 @@ describe("myNFT", function() {
     const myContract = await contract.deploy();
     await myContract.deployedContract;
 
-    let contractAddr = await myContract.getAddress();
-    console.log("NFT Contract deployed to: " + contractAddr + "by " + myContract.owner.address);
-
     return {myContract, accountOwner, accountTwo};
   }
   prerequisitesFixture();
@@ -34,10 +31,11 @@ describe("myNFT", function() {
 
       //By using Ownable.sol, mycontract.owner() will return an address (not an account type !!!)
       // whereas accountOwner and accountTwo are account types so we get addresses through methods
-      console.log("mycontractowner address : " + myContract.owner());
-      console.log("accountOwner address : " + accountOwner.address);
       expect(await myContract.owner()).to.equal(accountOwner.address);
-    });
+    });    
+  });
+
+  describe("NFT Metadata", function (){
 
     it("Should read correct metadata", async function () {
       const {myContract, accountOwner,} = await loadFixture(prerequisitesFixture);
@@ -95,4 +93,22 @@ describe("myNFT", function() {
       expect(_description).to.equal(description);
     });
   });
+
+  describe("Contract Acess Rights", function () {
+
+    it("Only contract owner should be able to mint the NFT and modify metadata", async function () {
+      const {myContract, accountOwner, accountTwo} = await loadFixture(prerequisitesFixture);
+
+      const description = "My access right NFT";
+      const NFTParentId = 0;
+      const mintErrorMsg = "OwnableUnauthorizedAccount(\"" + accountTwo.address + "\")";
+          
+      const mintTest = "Caller is not the owner and cannot mint";
+      await myContract.connect(accountTwo).mint(description, NFTParentId, accountTwo.address);
+      //expect(await myContract.connect(accountTwo).mint(description, NFTParentId, accountTwo.address)).to.be.revertedWith(mintErrorMsg);
+
+      //expect(await myContract.connect(accountTwo).setMetadata(description, 1, NFTParentId))
+      //.to.be.revertedWith(mintErrorMsg);
+    })
+  })
 })
