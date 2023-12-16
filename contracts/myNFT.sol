@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.20;
 
+import "hardhat/console.sol"; 
 //import the standard implementation of ERC721 and Ownable for access right
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -31,6 +32,7 @@ function mint(string memory _description, uint256 _parentId, address _tokenOwner
 
     //We mint the token first because it's more gas effective than if we mint it after added metadata
     _mint(_tokenOwner, nextToken);
+    console.log("NFT minted !");
 
     //Add metadata to the token
     tokenMetadataBook[nextToken] = TokenMetadata({

@@ -12,9 +12,9 @@ async function main() {
 
   await deployedContract.deployedContract;
 
-  contractAddr = await deployedContract.getAddress();
+  let contractAddr = await deployedContract.getAddress();
   console.log("NFT Contract deployed to: " + contractAddr);
-  fs.writeFileSync('contractAddress.txt', contractAddr);
+  //fs.writeFileSync('contractAddress.txt', contractAddr);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
