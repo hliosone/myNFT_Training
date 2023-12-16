@@ -38,6 +38,61 @@ describe("myNFT", function() {
       console.log("accountOwner address : " + accountOwner.address);
       expect(await myContract.owner()).to.equal(accountOwner.address);
     });
-  });
 
+    it("Should read correct metadata", async function () {
+      const {myContract, accountOwner,} = await loadFixture(prerequisitesFixture);
+
+      //Minting of an NFT by accountOwner and verification of data integrity
+      const NFTNumber = 1;
+      const NFTParentId = 0;
+      const description = "My NFT to read";
+      await myContract.mint(description, NFTParentId, accountOwner.address);
+
+      const [_description, _parentId, _tokenOwner, _childrens] = await myContract.readMetadata(NFTNumber);
+
+      expect(_description).to.equal(description);
+      expect(_parentId).to.equal(NFTParentId);
+      expect(_tokenOwner).to.equal(accountOwner.address);
+      expect(_childrens).to.deep.equal([]);
+    });
+
+    it("Should modify correctly metadata", async function () {
+      const {myContract, accountOwner,} = await loadFixture(prerequisitesFixture);
+
+      //Creation of two NFTs with the same description but different parent ID
+      NFTNumber = 0;
+      const NFTParentId = 0;
+      const description = "My NFT to modify";
+
+      for (let i = 0; i < 2; ++i) {
+        await myContract.mint(description, NFTParentId + i, accountOwner.address);
+        ++NFTNumber;
+      }
+
+      //Changing NFT n2 description to be different and ParentID to become the same as NFT n1
+      const newDescription = "It is a new description";
+      await myContract.setMetadata(newDescription, NFTNumber, NFTParentId);
+      [_description, _parentId, _tokenOwner,] = await myContract.readMetadata(NFTNumber);
+      expect(_description).to.not.equal(description);
+      expect(_parentId).to.equal(NFTParentId);
+      expect(_tokenOwner).to.equal(accountOwner.address);
+
+      //Creating NFT n3 as a children of NFT n1, should be listed as an NFT n1 children
+      await myContract.mint(description, NFTParentId + 1, accountOwner.address);
+      ++NFTNumber;
+      await myContract.setMetadata(description, NFTNumber, NFTParentId + 1);
+      [_, , , _childrens] = await myContract.readMetadata(NFTParentId + 1);
+      expect(_childrens).to.deep.equal([NFTNumber]);
+
+      // Removing NFT n3 as NFT n1 children, NFT n1 should't have NFT n3 as children
+      await myContract.setMetadata(description, NFTNumber, NFTParentId);
+      [_, , , _childrens] = await myContract.readMetadata(NFTParentId + 1);
+      expect(_childrens).to.deep.equal([]);
+
+      //Shouldn't change the description to pass an empty string
+      await myContract.setMetadata("", NFTNumber, NFTParentId + 1);
+      [_description, , ,] = await myContract.readMetadata(NFTNumber);
+      expect(_description).to.equal(description);
+    });
+  });
 })
