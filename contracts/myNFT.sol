@@ -20,7 +20,7 @@ contract myNFT is ERC721, Ownable {
 
 mapping(uint256 => TokenMetadata) private tokenMetadataBook;
 
-//Using msg.sender instead of constructor argument for security reasons
+//Using msg.sender instead of constructor argument for security reasons?
 constructor() ERC721("mySuperNFT","SPNFT") Ownable(msg.sender) {}
 
 //mint function is only callable by the owner so here the first msg.sender of the contract
