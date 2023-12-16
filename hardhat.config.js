@@ -13,7 +13,7 @@ module.exports = {
       chainId: 1337,
       //here Hardhat will generate 10 accounts 
       accounts: {
-        count: 10,
+        count: 2,
       },
     },
     sepolia: {
