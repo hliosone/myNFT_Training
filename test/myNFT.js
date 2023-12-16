@@ -101,14 +101,10 @@ describe("myNFT", function() {
 
       const description = "My access right NFT";
       const NFTParentId = 0;
-      const mintErrorMsg = "OwnableUnauthorizedAccount(\"" + accountTwo.address + "\")";
-          
-      const mintTest = "Caller is not the owner and cannot mint";
-      await myContract.connect(accountTwo).mint(description, NFTParentId, accountTwo.address);
-      //expect(await myContract.connect(accountTwo).mint(description, NFTParentId, accountTwo.address)).to.be.revertedWith(mintErrorMsg);
 
-      //expect(await myContract.connect(accountTwo).setMetadata(description, 1, NFTParentId))
-      //.to.be.revertedWith(mintErrorMsg);
+      //Calls to functions should be reverted as accountTwo is not the owner of the contract and cannot mint or modifiy metadata
+      await expect(myContract.connect(accountTwo).mint(description, NFTParentId, accountTwo.address)).to.be.reverted;
+      await expect(myContract.connect(accountTwo).setMetadata(description, 1, NFTParentId)).to.be.reverted;
     })
   })
 })
