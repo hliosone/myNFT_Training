@@ -42,7 +42,6 @@ function mint(string memory _description, uint256 _parentId, address _tokenOwner
         childrens: new uint256[](0)
     });
 
-    //Need to verify if parent exists before pushing !!!
     if(_parentId != 0){tokenMetadataBook[_parentId].childrens.push(nextToken);}
 
     //Incrementing after metadata creation for next token number
