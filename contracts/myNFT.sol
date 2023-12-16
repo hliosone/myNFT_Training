@@ -20,19 +20,20 @@ contract myNFT is ERC721, Ownable {
 
 mapping(uint256 => TokenMetadata) private tokenMetadataBook;
 
-//Using msg.sender instead of constructor argument for security reasons?
+//Using msg.sender instead of constructor argument for security reasons
 constructor() ERC721("mySuperNFT","SPNFT") Ownable(msg.sender) {}
 
 //mint function is only callable by the owner so here the first msg.sender of the contract
 function mint(string memory _description, uint256 _parentId, address _tokenOwner) external onlyOwner {
 
-    uint256 tokenNumber = nextToken;
+    //Verify if parent is not current token and if parent exists
+    require((_parentId != nextToken) && (_parentId == 0 || tokenExists(_parentId)));
 
     //We mint the token first because it's more gas effective than if we mint it after added metadata
-    _mint(_tokenOwner, tokenNumber);
+    _mint(_tokenOwner, nextToken);
 
     //Add metadata to the token
-    tokenMetadataBook[tokenNumber] = TokenMetadata({
+    tokenMetadataBook[nextToken] = TokenMetadata({
         description: _description,
         tokenOwner: _tokenOwner,
         parentId: _parentId,
@@ -40,7 +41,7 @@ function mint(string memory _description, uint256 _parentId, address _tokenOwner
     });
 
     //Need to verify if parent exists before pushing !!!
-    if(_parentId != 0){tokenMetadataBook[_parentId].childrens.push(tokenNumber);}
+    if(_parentId != 0){tokenMetadataBook[_parentId].childrens.push(nextToken);}
 
     //Incrementing after metadata creation for next token number
     ++nextToken;
@@ -62,12 +63,16 @@ function setMetadata(string memory _description, uint256 _tokenNumber, uint256 _
     }
 
     //Check if the newParentId token exists and modify children string
-    if(tokenMetadataBook[_newParentId].tokenOwner != address(0) && tokenMetadataBook[_tokenNumber].parentId != _newParentId){
+    if((tokenExists(_newParentId) || _newParentId == 0) && tokenMetadataBook[_tokenNumber].parentId != _newParentId){
+        
         if(tokenMetadataBook[_tokenNumber].parentId != 0){
             deleteChildrenRelation(_tokenNumber);
         }
-        addChildrenRelation(_newParentId, _tokenNumber);
+        if(_newParentId != 0){
+            addChildrenRelation(_newParentId, _tokenNumber);
+        }
 
+        tokenMetadataBook[_tokenNumber].parentId = _newParentId;
     }
 }
 
@@ -89,7 +94,6 @@ function setMetadata(string memory _description, uint256 _tokenNumber, uint256 _
 
     //Add a children to parent children list if it's not already there and change the parent id
     function addChildrenRelation(uint256 _newParentId, uint256 _childrenToken) internal {
-        //TokenMetadata memory parent = tokenMetadataBook[_newParentId];
         uint256[] storage childrensList = tokenMetadataBook[_newParentId].childrens;
         
         for (uint256 i = 0; i < childrensList.length; ++i){
@@ -98,6 +102,9 @@ function setMetadata(string memory _description, uint256 _tokenNumber, uint256 _
             }
         }
         childrensList.push(_childrenToken);
-        tokenMetadataBook[_childrenToken].parentId = _newParentId;
+    }
+
+    function tokenExists(uint256 _tokenId) internal view returns(bool){
+        return (tokenMetadataBook[_tokenId].tokenOwner != address(0));
     }
 }
